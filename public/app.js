@@ -50,6 +50,40 @@ let items = [];
 let nextId = 1;
 
 // ---------------------------------------------------------------------------
+// Device-specific wording
+// ---------------------------------------------------------------------------
+
+function detectDevice() {
+  const ua = navigator.userAgent;
+  const platform = navigator.userAgentData?.platform || navigator.platform || '';
+  // iPadOS reports itself as a Mac, so tell them apart by touch support.
+  const isIPad = /iPad/.test(ua) || (/Mac/.test(platform) && navigator.maxTouchPoints > 1);
+  if (isIPad || /Tablet|Android(?!.*Mobile)/i.test(ua)) return 'tablet';
+  if (navigator.userAgentData?.mobile || /iPhone|iPod|Android|Mobi/i.test(ua)) return 'phone';
+  if (/Mac/.test(platform)) return 'mac';
+  if (/Win/.test(platform)) return 'pc';
+  if (/CrOS/.test(ua)) return 'chromebook';
+  return 'computer';
+}
+
+const DEVICE_NAMES = {
+  phone: 'phone', tablet: 'tablet', mac: 'Mac', pc: 'PC', chromebook: 'Chromebook', computer: 'computer',
+};
+
+function applyDeviceText() {
+  const device = detectDevice();
+  $('#tagline').textContent = `100% local. Your files never leave this ${DEVICE_NAMES[device]}.`;
+  if (device === 'phone' || device === 'tablet') {
+    // No drag & drop or keyboard paste on touch devices.
+    $('#dropTitle').innerHTML = '<span class="link">Tap to choose files</span>';
+    $('#dropSub').textContent = `Converted files are saved to your ${DEVICE_NAMES[device]}`;
+  } else {
+    $('#dropSub').textContent = `You can also paste images with ${device === 'mac' ? '⌘V' : 'Ctrl+V'}`;
+  }
+}
+applyDeviceText();
+
+// ---------------------------------------------------------------------------
 // Settings & theme
 // ---------------------------------------------------------------------------
 
